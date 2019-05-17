@@ -28,18 +28,19 @@ spec:
           args:
             - --global.debug
             - --api
-            - --entrypoints=Name:web Address::8000  Name:webs Address::8443
+            - --entrypoints=Name:web Address::8000
+            - --entrypoints=Name:footcp Address::8090
             - --providers.kubernetescrd
           ports:
             - name: web
               containerPort: 8000
             - name: webs
-              containerPort: 8443
+              containerPort: 8090
             - name: admin
               containerPort: 8080
 
 ---
-# you can expose this service with `$kubectl port-forward service/traefik 8000:8000 8080:8080 -n default`
+# you can expose this service with `$kubectl port-forward service/traefik 8000:8000 8080:8080 8090:8090 -n default`
 apiVersion: v1
 kind: Service
 metadata:
@@ -53,6 +54,9 @@ spec:
     - protocol: TCP
       name: admin
       port: 8080
+    - protocol: TCP
+      name: footcp
+      port: 8090
   selector:
     app: traefik
 
@@ -95,3 +99,41 @@ spec:
       port: 80
   selector:
     app: whoami
+
+---
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: whoamitcp
+  labels:
+    app: whoamitcp
+
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: whoamitcp
+  template:
+    metadata:
+      labels:
+        app: whoamitcp
+    spec:
+      containers:
+        - name: containouswhoamitcp
+          image: containous/whoamitcp
+          ports:
+            - containerPort: 8080
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: whoamitcp
+
+spec:
+  ports:
+    - protocol: TCP
+      name: footcp
+      port: 8080
+  selector:
+    app: whoamitcp
