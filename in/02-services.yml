@@ -1,0 +1,97 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: traefik-ingress-controller
+
+---
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: traefik
+  labels:
+    app: traefik
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: traefik
+  template:
+    metadata:
+      labels:
+        app: traefik
+    spec:
+      serviceAccountName: traefik-ingress-controller
+      containers:
+        - name: traefik
+          image: traefik:v2.0
+          args:
+            - --global.debug
+            - --api
+            - --entrypoints=Name:web Address::8000  Name:webs Address::8443
+            - --providers.kubernetescrd
+          ports:
+            - name: web
+              containerPort: 8000
+            - name: webs
+              containerPort: 8443
+            - name: admin
+              containerPort: 8080
+
+---
+# you can expose this service with `$kubectl port-forward service/traefik 8000:8000 8080:8080 -n default`
+apiVersion: v1
+kind: Service
+metadata:
+  name: traefik
+
+spec:
+  ports:
+    - protocol: TCP
+      name: web
+      port: 8000
+    - protocol: TCP
+      name: admin
+      port: 8080
+  selector:
+    app: traefik
+
+---
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: whoami
+  labels:
+    app: whoami
+
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: whoami
+  template:
+    metadata:
+      labels:
+        app: whoami
+    spec:
+      serviceAccountName: traefik-ingress-controller
+      containers:
+        - name: whoami
+          image: containous/whoami
+          ports:
+            - name: web
+              containerPort: 80
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: whoami
+
+spec:
+  ports:
+    - protocol: TCP
+      name: web
+      port: 80
+  selector:
+    app: whoami
