@@ -24,7 +24,7 @@ spec:
       serviceAccountName: traefik-ingress-controller
       containers:
         - name: traefik
-          image: traefik:v2.0
+          image: traefik:crd
           args:
             - --global.debug
             - --api
