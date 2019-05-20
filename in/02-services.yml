@@ -28,37 +28,43 @@ spec:
           args:
             - --global.debug
             - --api
-            - --entrypoints=Name:web Address::8000
+            - --entrypoints=Name:web Address::80
             - --entrypoints=Name:footcp Address::8090
             - --providers.kubernetescrd
           ports:
             - name: web
-              containerPort: 8000
+              containerPort: 80
             - name: webs
               containerPort: 8090
             - name: admin
               containerPort: 8080
+          type:
 
 ---
-# you can expose this service with `$kubectl port-forward service/traefik 8000:8000 8080:8080 8090:8090 -n default`
 apiVersion: v1
 kind: Service
 metadata:
   name: traefik
-
 spec:
-  ports:
-    - protocol: TCP
-      name: web
-      port: 8000
-    - protocol: TCP
-      name: admin
-      port: 8080
-    - protocol: TCP
-      name: footcp
-      port: 8090
   selector:
     app: traefik
+  ports:
+    - protocol: TCP
+      port: 80
+      name: web
+      targetPort: 80
+      nodePort: 30080
+    - protocol: TCP
+      port: 8090
+      name: webs
+      targetPort: 8090
+      nodePort: 30090
+    - protocol: TCP
+      port: 8080
+      name: admin
+      targetPort: 8080
+      nodePort: 30880
+  type: NodePort
 
 ---
 kind: Deployment
@@ -81,7 +87,7 @@ spec:
       serviceAccountName: traefik-ingress-controller
       containers:
         - name: whoami
-          image: containous/whoami
+          image: whoami:local
           ports:
             - name: web
               containerPort: 80
@@ -120,7 +126,7 @@ spec:
     spec:
       containers:
         - name: containouswhoamitcp
-          image: containous/whoamitcp
+          image: whoamitcp:local
           ports:
             - containerPort: 8080
 

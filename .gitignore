@@ -6,3 +6,5 @@ in/coredns\.yaml
 in/traefik\.yaml
 
 out/kubeconfig\.yaml
+
+images/

@@ -22,3 +22,7 @@ node:
   volumes:
     # allow to use local images
     - ./images:/var/lib/rancher/k3s/agent/images
+  ports:
+    - 80:30080
+    - 8080:30880
+    - 8090:30090

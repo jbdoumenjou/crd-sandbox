@@ -1,32 +1,44 @@
-This is a simple example of traefik with kubernetes as CRD IngressRoute
+# Purpose
 
-# Create A local Image 
+Test traefik with kubernetes crd provider.  
+Use k3s as a kubernetes stack to keep it simple to use.  
+The k3s container will forward HTTP and TCP traffic to the traefik service.
 
-`docker save containous/traefik:latest -o ./images/traefik.tar`
+# Usage
 
-# Launch The Stack:
+## Makefile
+   
+### `make all`
+   
+* Creates needed images
+* Launch the k3s stack
+* Set the KUBECONFIG environment variable.
+   
+### `make build-images`
 
-`docker-compose up -d`
+* Clean the images directory
+* Prepare whoami, whoamitcp and traefik images for the k3s stack.
 
-# Use The Right Kubernetes
+### `make stop`
 
-`export KUBECONFIG=$(pwd)/out/kubeconfig.yaml`
+* Stop the stack
+* Clean docker images/volumes
 
-# Check the Stack
+### `make test-http`
+
+* Simple http call to the whoami via traefik
+
+### `make test-api`
+
+* Simple http call to the traefik api
+
+### `make test-tcp`
+
+* Simple tcp call to the whoamitcp via traefik
+
+## Check the Stack
 
 `kubectl get all`
-
-# Expose the Traefik Service
-
-`kubectl port-forward service/traefik 8000:8000 8080:8080 8090:8090 -n default`
-
-# Check the Configuration
-
-`curl localhost:8080/api/rawdata`
-
-# Try the HTTP Service
-
-`curl localhost:8000/whoami`
 
 # Try the TCP Service
 
@@ -35,3 +47,6 @@ telnet localhost 8090
 WHO
 STOP
 ```
+
+Type WHO to get a whoamitcp response.
+Type STOP to close the connection.
