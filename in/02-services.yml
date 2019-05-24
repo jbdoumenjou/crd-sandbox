@@ -53,18 +53,15 @@ spec:
       port: 80
       name: web
       targetPort: 80
-      nodePort: 30080
     - protocol: TCP
       port: 8090
       name: webs
       targetPort: 8090
-      nodePort: 30090
     - protocol: TCP
       port: 8080
       name: admin
       targetPort: 8080
-      nodePort: 30880
-  type: NodePort
+  type: LoadBalancer
 
 ---
 kind: Deployment
